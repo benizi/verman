@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use FindBin '$RealBin';
+use File::Basename;
+use File::Spec;
+use lib File::Spec->catfile(dirname($RealBin), 'lib');
+use Verman;
+
+Verman->new->cmd($0, @ARGV);
