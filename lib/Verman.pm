@@ -106,25 +106,34 @@ sub join_pathlike {
 }
 
 sub no_path {
-  my ($self, $name, $reject) = @_;
-  ($name, $reject) = ('PATH', $name) unless $reject;
+  my ($self, @rest) = @_;
+  $self->no_pathlike(PATH => @rest)
+}
+
+sub pre_path {
+  my ($self, @rest) = @_;
+  $self->pre_pathlike(PATH => @rest)
+}
+
+sub no_pathlike {
+  my ($self, $name, $reject, $prefix) = @_;
 
   my @path;
-  for my $dir ($self->split_pathlike($ENV{$name})) {
+  for my $dir ($self->split_pathlike($self->var($name) || $ENV{$name})) {
     my @split = File::Spec->splitdir($dir);
     #warn "$name $dir ? $reject\n";
     next if grep File::Spec->catdir(@split[0..$_]) eq $reject, 1..$#split;
     #warn "$name $dir +\n";
     push @path, $dir;
   }
-  $self->eval($name, $self->join_pathlike(@path))
+  $self->var_eval($name, $self->join_pathlike(@path))
 }
 
-sub pre_path {
+sub pre_pathlike {
   my ($self, $name, $path) = @_;
   ($name, $path) = ('PATH', $name) unless $path;
   #warn sprintf("%*s ", length($path), ' ')."$ENV{$name}\n";
-  $self->eval($name, $self->join_pathlike($path, $self->split_pathlike($ENV{$name})))
+  $self->var_eval($name, $self->join_pathlike($path, $self->split_pathlike($self->var($name) || $ENV{$name})))
   #; warn "$ENV{$name}\n";
 }
 
