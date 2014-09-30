@@ -26,6 +26,12 @@ sub eval {
   push @{$$self{eval}}, [$var, $val, $export];
 }
 
+sub var_eval {
+  my ($self, @rest) = @_;
+  $self->var(@rest);
+  $self->eval(@rest)
+}
+
 sub evalout {
   my $self = shift;
   my @eval = @{$$self{eval}};
