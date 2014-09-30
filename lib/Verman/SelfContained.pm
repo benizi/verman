@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use base 'Verman';
 use Verman::Util;
+our $_abstract;
 
 # Clearly, I've forgotten how to write Perldoc...
 #

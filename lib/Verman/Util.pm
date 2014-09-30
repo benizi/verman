@@ -19,6 +19,7 @@ our @EXPORT = qw(
   &pop_dir
   &run
 );
+our $_abstract;
 
 sub version_sort {
   my $n = 6;

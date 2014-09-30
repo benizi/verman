@@ -4,8 +4,10 @@ use warnings;
 use base 'Exporter';
 use FindBin '$Bin';
 use File::Basename;
+use File::Find;
 use Config;
 use Verman::Util;
+our $_abstract;
 
 sub new {
   my $self = bless {
@@ -185,9 +187,35 @@ sub runner_cmd_args {
   ($runner, @$args)
 }
 
+sub _load_langs {
+  my $self = shift;
+  my $base = dirname $INC{'Verman.pm'};
+  my @mods;
+
+  find sub {
+    return unless -f;
+    (my $mod = substr $File::Find::name, 1 + length $base) =~ s{\.pm$}{};
+    $mod =~ s{/}{::}g;
+    eval "require $mod; 1" and push @mods, $mod;
+  }, $base;
+
+  for my $mod (@mods) {
+    my $sym = \%::;
+    $sym = $$sym{$_.'::'} for split /::/, $mod;
+    next if exists $$sym{_abstract};
+    my $lang = $mod;
+    $lang =~ s{^.+::}{};
+    $$self{_langs}{lc $lang} = {
+      lang => $lang,
+      module => $mod,
+    };
+  }
+}
+
 sub langs {
   my $self = shift;
-  "here"
+  $self->_load_langs;
+  sort keys %{$$self{_langs}}
 }
 
 sub cmd {
