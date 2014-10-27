@@ -52,11 +52,9 @@ sub use {
   $self->env_vars($self->_vervar => $version);
   $self->no_path($root);
   $self->pre_path(path $home, 'bin');
-  $self->after_path;
+  $self->after_path if $self->can('after_path');
   exec { $rest[0] } @rest if @rest;
   "using $version"
 }
-
-sub after_path {}
 
 1;
