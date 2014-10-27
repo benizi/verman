@@ -2,6 +2,7 @@ package Verman::Compiled;
 use strict;
 use warnings;
 use vars '$upstream';
+use Verman::Util;
 our $_abstract;
 
 sub new {
@@ -19,6 +20,15 @@ sub update {
   my $self = shift;
   #my $dest
   $self->upstream
+}
+
+sub _get_source {
+  my $self = shift;
+  my $root = $self->var($self->_rootvar);
+  my $git = path $root, 'git';
+  return if -d $git;
+  my $url = $self->var($self->_varname('upstream'));
+  system { 'git' } git => clone => $url => $git
 }
 
 1;

@@ -10,15 +10,6 @@ sub new {
   $self
 }
 
-sub _get_source {
-  my $self = shift;
-  my $root = $self->var($self->_rootvar);
-  my $git = path $root, 'git';
-  return if -d $git;
-  my $url = $self->var($self->_varname('upstream'));
-  system { 'git' } git => clone => $url => $git
-}
-
 sub available {
   my $self = shift;
   my $root = $self->var($self->_rootvar);
