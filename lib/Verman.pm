@@ -15,7 +15,8 @@ sub new {
     vars => [],
     eval => [],
   }, shift;
-  my $root = $self->var(root => dirname($Bin), 1);
+  my $default_root = (-w '/opt') ? '/opt' : dirname($Bin);
+  my $root = $self->var(root => $default_root, 1);
   $self->var(hidden => ($root eq $ENV{HOME}) ? 1 : 0, 1);
   $self->var(bin => $Bin, 1);
   $self->setup_lang_root;
