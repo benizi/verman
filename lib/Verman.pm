@@ -172,6 +172,7 @@ sub runner_default {
 
   if ($verman_arg0) {
     shift @$args;
+    return $self, $$args[0] if $self->can($$args[0]);
     my $class = $self->load_class_for(shift @$args);
     return $class->new, 'current' if $class;
   }
