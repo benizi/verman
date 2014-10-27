@@ -1,31 +1,52 @@
 package Verman::Node;
 use strict;
 use warnings;
-use base 'Verman';
+use base 'Verman::SelfContained', 'Verman::Compiled';
 use Verman::Util;
 
 sub new {
   my $self = shift->SUPER::new(@_);
-  my $node = $self->var(node_root => path($self->var('root'), 'node'), 1);
-  $self->var(node_versions => path($node, 'versions'), 1);
-  $self->var(node_git => path($node, 'git'), 1);
+  $self->var($self->_varname('upstream'), 'https://github.com/joyent/node');
   $self
 }
 
-sub setup_build {
+sub _get_source {
   my $self = shift;
-  my $git = $self->var('node_git');
-  mkpath $git unless -d $git;
-  die "Couldn't create $git: $!" unless -d $git;
+  my $root = $self->var($self->_rootvar);
+  my $git = path $root, 'git';
+  return if -d $git;
+  my $url = $self->var($self->_varname('upstream'));
+  system { 'git' } git => clone => $url => $git
 }
 
 sub available {
   my $self = shift;
-  $self->setup_build;
-  push_dir $self->var('node_git');
+  my $root = $self->var($self->_rootvar);
+  $self->_get_source;
+  push_dir path $root, 'git';
   my @tags = run qw/git tag/;
   pop_dir;
   version_sort grep /^v/, @tags;
+}
+
+sub install {
+  my ($self, $version) = @_;
+  $self->_get_source;
+  my $root = $self->var($self->_rootvar);
+  my $versions = $self->var($self->_versvar);
+  my $build = path $root, 'build', $version;
+  my $prefix = path $versions, $version;
+  <<BUILD;
+cd $root/git &&
+mkdir -p $build $versions &&
+printf 'Extracting...' &&
+git archive $version | (cd $build ; tar x) &&
+printf 'Done\n' &&
+cd $build &&
+./configure --prefix=$versions/$version &&
+make &&
+make install
+BUILD
 }
 
 1;
