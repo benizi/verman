@@ -57,4 +57,9 @@ sub use {
   "using $version"
 }
 
+sub installed {
+  my ($self) = @_;
+  ls $self->var($self->_versvar)
+}
+
 1;
