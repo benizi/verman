@@ -146,15 +146,19 @@ sub print_env {
   }
 }
 
+sub _verman_dir {
+  my $path = $INC{__PACKAGE__.'.pm'};
+  $path =~ s{\.pm$}{};
+  File::Spec->catdir(dirname($path), @_)
+}
+
 sub load_class_for {
   my ($self, $arg) = @_;
-  my $class = 'Verman::'.ucfirst $arg;
-  unless (eval "require $class; 1") {
-    if ($@ =~ /Can't locate Verman/) {
-      die "Couldn't find class for $class\n";
-    }
-    die "$@";
-  }
+  my @files = map basename($_, '.pm'), ls _verman_dir 'Verman';
+  my ($mod) = grep { lc eq lc $arg } @files;
+  die "Couldn't find Verman:: module for $arg\n" unless $mod;
+  my $class = 'Verman::'.$mod;
+  eval "require $class; 1" or die "$@";
   $class
 }
 
