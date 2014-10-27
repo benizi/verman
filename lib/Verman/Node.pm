@@ -32,7 +32,7 @@ cd $root/git &&
 mkdir -p $build $versions &&
 printf 'Extracting...' &&
 git archive $version | (cd $build ; tar x) &&
-printf 'Done\n' &&
+printf 'Done\\n' &&
 cd $build &&
 ./configure --prefix=$versions/$version &&
 make &&
