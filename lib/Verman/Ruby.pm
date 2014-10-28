@@ -22,9 +22,7 @@ sub after_path {
   my $gems = path $base, 'lib', 'ruby', 'gems';
   my $gem_bin = path $gems, 'bin';
   $self->pre_path($gem_bin);
-  $self->no_pathlike(GEM_PATH => $root);
-  $self->pre_pathlike(GEM_PATH => $gems);
-  $self->env_vars(GEM_HOME => $gems);
+  $self->env_vars(GEM_HOME => $gems, GEM_PATH => $gems);
   # TODO: jRuby-specific vars
 }
 
