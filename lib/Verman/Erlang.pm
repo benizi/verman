@@ -1,57 +1,34 @@
 package Verman::Erlang;
 use strict;
 use warnings;
-use base 'Verman';
+use base 'Verman::SelfContained', 'Verman::Compiled';
 use Verman::Util;
 
 sub new {
   my $self = shift->SUPER::new(@_);
-  my $erlang = $self->var(erlang_root => path($self->var('root'), 'erlang'), 1);
-  $self->var(erlang_versions => path($erlang, 'versions'), 1);
-  $self->var(erlang_git => path($erlang, 'git'), 1);
-  $self->var(erlang_upstream => 'https://github.com/erlang/otp');
+  $self->var($self->_varname('upstream'), 'https://github.com/erlang/otp');
   $self
 }
 
-sub setup {
-  my $self = shift;
-  my $git = $self->var('erlang_git');
-  my $upstream = $self->var('erlang_upstream');
-  my $base = basename $git;
-  for ($base, $self->var('erlang_versions')) {
-    mkpath $_ unless -d;
-    die "Couldn't create $_ $!" unless -d;
-  }
-  return if -d $git;
-  system { 'git' } git => clone => -o => erlang => $upstream => $git;
-}
-
-sub use {
-  my ($self, $version, @rest) = @_;
-  my $root = $self->var('erlang_root');
-  my $versions = $self->var('erlang_versions');
-  my $home = path $versions, $version;
-  return 'No such Erlang' unless -d $home;
-  $self->env_vars(erlang_version => $version);
-  $self->no_path($root);
-  $self->pre_path(path $home, 'bin');
-  exec { $rest[0] } @rest if @rest;
-  "using $version"
-}
-
 sub install {
-  my ($self, $version, @rest) = @_;
-  my %versions = $self->version_map;
-  die "No such Erlang version: $version\n" unless exists $versions{$version};
-  my $tag = $versions{$version};
-  my $home = path $self->var('erlang_versions'), $version;
-  push_dir $self->var('erlang_git');
-  run qw/git clean -xdf/;
-  system { 'sh' } 'sh', '-c', "git checkout -f -b $version $tag || git checkout -f $version || true";
-  system <<BUILD;
-git clean -xdf &&
+  my ($self, $version) = @_;
+  my %vmap = $self->version_map;
+  die "Couldn't find tag for $version\n" unless exists $vmap{$version};
+  my $tag = $vmap{$version};
+  $self->_get_source;
+  my $root = $self->var($self->_rootvar);
+  my $versions = $self->var($self->_versvar);
+  my $build = path $root, 'build', $version;
+  my $prefix = path $versions, $version;
+  <<BUILD;
+cd $root/git &&
+mkdir -p $build $versions &&
+printf 'Extracting...' &&
+git archive $tag | (cd $build ; tar x) &&
+printf 'Done\\n' &&
+cd $build &&
 ./otp_build autoconf &&
-./configure --prefix=$home &&
+./configure --prefix=$prefix &&
 make &&
 make install
 BUILD
@@ -91,8 +68,8 @@ sub installed {
 
 sub version_map {
   my ($self) = @_;
-  my $git = $self->var('erlang_git');
-  push_dir $git;
+  my $root = $self->var($self->_rootvar);
+  push_dir path $root, 'git';
   my @tags = run qw/git tag/;
   my %ret = (map {
     my $tag = $_;
