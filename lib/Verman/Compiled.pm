@@ -28,6 +28,7 @@ sub _get_source {
   my $git = path $root, 'git';
   return if -d $git;
   my $url = $self->var($self->_varname('upstream'));
+  mkpath $root || die "Couldn't mkdir -p $root: $!";
   system { 'git' } git => clone => $url => $git
 }
 
