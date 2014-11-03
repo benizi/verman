@@ -27,8 +27,6 @@ sub after_path {
 
   unshift @libs, path $root, 'path', $v;
 
-  #if ($ENV{VERMAN_DEBUG}) { use Pry; pry; }
-
   $self->no_pathlike(GOPATH => $root, 1);
   for my $lib (grep -d, @libs) {
     $self->pre_pathlike(GOPATH => $lib);
