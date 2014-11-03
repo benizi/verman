@@ -27,13 +27,14 @@ sub after_path {
 
   unshift @libs, path $root, 'path', $v;
 
+  $self->no_path($root);
+  $self->pre_path(path $goroot, 'bin');
+
   $self->no_pathlike(GOPATH => $root, 1);
   for my $lib (grep -d, @libs) {
     $self->pre_pathlike(GOPATH => $lib);
+    $self->pre_path(path $lib, 'bin');
   }
-
-  $self->no_path($root);
-  $self->pre_path(path $goroot, 'bin');
 }
 
 sub install {
