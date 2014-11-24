@@ -1,33 +1,44 @@
-# VerMan
+# Verman
 
 Version Manager for multiple languages.
 
+# Disclaimers
+
+- This code is garbage.
+- It's written in Perl.
+- Those two items are not correllated.
+
+It's written in Perl, because `perl` is installed literally everywhere.  I may
+rewrite it in Python, because that's also (nowadays) installed everywhere.
+
+It's garbage, because I tried to be too "cute" with the execution model.
+
 # Supported languages
 
-* Node.JS
-* Go
+## Working
+
+I use these somewhat regularly, and Verman works for my purposes.
+
+* Elixir
 * Erlang
+* Go
+* Node.JS (`node`)
 * Ruby
+
+## Experimental
+
+* GHC
+* Haskell (intended to support the "Haskell Platform")
+* Rust
 
 # Installation
 
-PATH=verman/bin/ or source()'ed usage are both supported.
+1. Link `bin/verman` into a directory in your $PATH, or add the `bin` directory
+   directly (wherever you've checked it out) to your $PATH.
 
-# Usage
+2. Write your own shell wrappers if you want shell integration.
 
-## PATH usage (no shell integration)
+[E.g. mine](https://github.com/benizi/dotfiles/blob/80847fd245a42c3bca31c09cc1c5e295d740a75c/.zsh/.zshenv#L187-L213):
 
-Example for Erlang:
-
-In .bash_profile or .zshenv:
-
-```sh
-export VERMAN_BIN=$HOME/git/verman
-export VERMAN_ROOT=/opt
-```
-
-```sh
-verman erlang install R16
-verman erlang use --default R16
-verman erlang use R16 erl -v
-```
+(And, yes, you want shell integration.  It's basically required until I figure
+out how I want to handle default versions.)
