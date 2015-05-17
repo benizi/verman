@@ -15,12 +15,25 @@ sub new {
     vars => [],
     eval => [],
   }, shift;
-  my $default_root = (-w '/opt') ? '/opt' : dirname($Bin);
-  my $root = $self->var(root => $default_root, 1);
+  my $root = $self->var('root') || $self->var(root => $self->default_root, 1);
   $self->var(hidden => ($root eq $ENV{HOME}) ? 1 : 0, 1);
   $self->var(bin => $Bin, 1);
   $self->setup_lang_root;
   $self
+}
+
+sub default_root {
+  my $self = shift;
+  my $home = $ENV{HOME};
+  my $root = dirname $Bin;
+  return readlink for grep -l,
+    "$home/.config/verman",
+    "$home/.verman",
+    "$home/.verman-root",
+    "$root/root",
+    "$root/.verman";
+  return '/opt' if -w '/opt';
+  die "Couldn't determine Verman install directory\n";
 }
 
 sub eval {
