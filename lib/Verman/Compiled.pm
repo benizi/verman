@@ -32,4 +32,14 @@ sub _get_source {
   system { 'git' } git => clone => $url => $git
 }
 
+sub _tags {
+  my $self = shift;
+  $self->_get_source;
+  my $root = $self->var($self->_rootvar);
+  push_dir path $root, 'git';
+  my @tags = run qw/git tag/;
+  pop_dir;
+  @tags
+}
+
 1;

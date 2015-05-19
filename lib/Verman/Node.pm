@@ -11,13 +11,7 @@ sub new {
 }
 
 sub available {
-  my $self = shift;
-  my $root = $self->var($self->_rootvar);
-  $self->_get_source;
-  push_dir path $root, 'git';
-  my @tags = run qw/git tag/;
-  pop_dir;
-  version_sort grep /^v/, @tags;
+  version_sort grep /^v/, shift->SUPER::_tags
 }
 
 sub install {
