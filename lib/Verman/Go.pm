@@ -6,7 +6,7 @@ use Verman::Util;
 
 sub new {
   my $self = shift->SUPER::new(@_);
-  $self->var($self->_varname('upstream'), 'https://code.google.com/p/go');
+  $self->var($self->_varname('upstream'), 'https://go.googlesource.com/go');
   $self
 }
 
