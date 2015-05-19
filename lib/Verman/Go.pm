@@ -10,6 +10,10 @@ sub new {
   $self
 }
 
+sub available {
+  version_sort grep /^go/, shift->SUPER::_tags
+}
+
 sub after_path {
   my ($self) = @_;
   my $root = $self->var($self->_rootvar);
