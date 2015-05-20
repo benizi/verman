@@ -12,4 +12,29 @@ sub after_path {
   $self->pre_pathlike(LD_LIBRARY_PATH => $lib)
 }
 
+sub _triple {
+  map +(split)[1], grep /^Target:/, readpipe 'clang --version'
+}
+
+sub install {
+  my ($self, $version) = @_;
+  my $base = join '-', rust => $version => $self->_triple;
+  my $file = "$base.tar.gz";
+  my $url = "https://static.rust-lang.org/dist/$file";
+  my $root = $self->var($self->_rootvar);
+  my $versions = $self->var($self->_versvar);
+  my $build = path $root, 'build', $version;
+  my $prefix = path $versions, $version;
+  my $cache = path $root, 'downloads';
+  <<BUILD;
+mkdir -p $build $cache $versions &&
+printf 'Downloading %s...\\n' "$url" &&
+(test -f $cache/$file || curl -o $cache/$file \\
+ $url) &&
+printf 'Done\\n' &&
+tar xzf $cache/$file -C $build &&
+$build/$base/install.sh --prefix=$prefix
+BUILD
+}
+
 1;
