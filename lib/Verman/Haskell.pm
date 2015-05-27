@@ -1,27 +1,40 @@
 package Verman::Haskell;
 use strict;
 use warnings;
-use base 'Verman';
+use base 'Verman::SelfContained';
 use Verman::Util;
 
-sub new {
-  my $self = shift->SUPER::new(@_);
-  my $haskell = $self->var(haskell_root => path($self->var('root'), 'haskell'), 1);
-  $self->var(haskell_versions => path($haskell, 'versions'), 1);
-  $self
+sub install {
+  my ($self, $version) = @_;
+  my $file = "haskell-platform-${version}-unknown-linux-x86_64.tar.gz";
+  my $url = "https://www.haskell.org/platform/download/$version/$file";
+  my $root = $self->var($self->_rootvar);
+  my $versions = $self->var($self->_versvar);
+  my $cache = path $root, 'cache';
+  my $prefix = path $versions, $version;
+  my $stubs = path $root, 'stubs'; # to trick installer into allowing non-root
+
+  <<INSTALL;
+tempdir=\$(mktemp -d) &&
+trap 'test -n "\$tempdir\" && rm -r \${tempdir:?}' INT QUIT EXIT HUP &&
+mkdir -p $cache $versions $stubs \$tempdir/bin \$tempdir/share/man/man1 &&
+printf '%s\\n' '#!/bin/sh' 'echo 0' > $stubs/id &&
+chmod +x $stubs/id &&
+(test -f $cache/$file || curl -o $cache/$file $url) &&
+actual=\$(tar -tf $cache/$file | sed 1q) &&
+actual=/\${actual%/} &&
+haskell=\$(dirname \$actual) &&
+mkdir -p \$haskell &&
+ln -nsf \$actual $prefix &&
+cd / &&
+tar -xvf $cache/$file &&
+PATH=$stubs:\$PATH $prefix/bin/activate-hs --prefix \$tempdir &&
+echo ...but not really
+INSTALL
 }
 
-sub use {
-  my ($self, $version, @rest) = @_;
-  my $root = $self->var('haskell_root');
-  my $versions = $self->var('haskell_versions');
-  my $home = path $versions, $version;
-  return 'No such Haskell' unless -d $home;
-  $self->env_vars(haskell_version => $version);
-  $self->no_path($root);
-  $self->pre_path(path $home, 'bin');
-  exec { $rest[0] } @rest if @rest;
-  "using $version"
+sub available {
+  '2014.2.0.0'
 }
 
 1;
