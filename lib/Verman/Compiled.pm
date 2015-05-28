@@ -19,7 +19,7 @@ sub upstream {
 sub update {
   my $self = shift;
   my $root = $self->var($self->_rootvar);
-  run qw/git --git-dir/, path($root, 'git', '.git'), 'fetch'
+  run qw/git --git-dir/, path($root, 'git'), 'fetch'
 }
 
 sub _get_source {
@@ -29,7 +29,7 @@ sub _get_source {
   return if -d $git;
   my $url = $self->var($self->_varname('upstream'));
   mkpath $root || die "Couldn't mkdir -p $root: $!";
-  system { 'git' } git => clone => $url => $git
+  system { 'git' } qw/git clone --bare/, $url, $git
 }
 
 sub _tags {
