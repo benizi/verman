@@ -29,7 +29,7 @@ sub version_sort {
   sort { $$a[1] cmp $$b[1] }
   map [
     $_,
-    join('', map sprintf(/\d/ ? $nfmt : $sfmt, /\d/ ? eval : $_), split /(\d+)/),
+    join('', map sprintf(/\d/ ? $nfmt : $sfmt, /^0*(\d+)$/ ? eval($1) : $_), split /(\d+)/),
   ], @_
 }
 
