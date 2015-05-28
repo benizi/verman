@@ -1,0 +1,79 @@
+#compdef verman
+
+_verman() {
+  local lang cmd ret
+  ret=1
+
+  local -a _verman_commands
+  _verman_commands=(
+    use:'Use a particular version'
+    install:'Install a version'
+    available:'Show versions available to install'
+    installed:'Show versions already installed'
+  )
+
+  _arguments -C \
+    ':language:->lang' \
+    ':command:->cmd' \
+    '*:: :->commandoptions' && ret=0
+
+  case $state in
+    (lang)
+      _call_function ret _verman_languages
+      ;;
+    (cmd)
+      _describe -t commands Command _verman_commands && ret=0
+      ;;
+    (commandoptions)
+      lang=$words[1]
+      cmd=$words[2]
+      curcontext=${curcontext%:*:*}:verman-$lang-$cmd
+      shift words 2
+      if (( $+functions[_verman_cmd_$cmd] ))
+      then _call_function ret _verman_cmd_$cmd
+      else _message 'Unknown subcommand: '$cmd
+      fi
+      ;;
+    (*)
+      _message 'Weird state: '$state
+      ;;
+  esac
+
+  return ret
+}
+
+_verman_cmd_use() {
+  _arguments '*::version:_verman_installed'
+}
+
+_verman_cmd_install() {
+  _arguments '*::version:_verman_available'
+}
+
+_verman_cmd_available _verman_cmd_installed() {
+  _message 'no more arguments'
+}
+
+(( $+functions[_verman_languages] )) ||
+_verman_languages() {
+  (( $+_verman_langs )) || _verman_langs=(
+    ${(f)"$(_call_program languages verman langs 2>&1)"}
+  )
+  _describe -t languages Language _verman_langs
+}
+
+(( $+functions[_verman_installed] )) ||
+_verman_installed() {
+  local -a versions
+  versions=( ${(f)"$(_call_program versions verman $lang installed)"} )
+  _describe -t versions 'Installed version' versions
+}
+
+(( $+functions[_verman_available] )) ||
+_verman_available() {
+  local -a versions
+  versions=( ${(f)"$(_call_program versions verman $lang available)"} )
+  _describe -t versions 'Available version' versions
+}
+
+_verman
