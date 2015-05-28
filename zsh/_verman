@@ -10,6 +10,7 @@ _verman() {
     install:'Install a version'
     available:'Show versions available to install'
     installed:'Show versions already installed'
+    update:'Update available versions'
   )
 
   _arguments -C \
@@ -50,7 +51,9 @@ _verman_cmd_install() {
   _arguments '*::version:_verman_available'
 }
 
-_verman_cmd_available _verman_cmd_installed() {
+_verman_cmd_available \
+_verman_cmd_installed \
+_verman_cmd_update() {
   _message 'no more arguments'
 }
 
