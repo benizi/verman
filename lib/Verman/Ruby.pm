@@ -6,11 +6,42 @@ use Verman::Util;
 
 sub new {
   my $self = shift->SUPER::new(@_);
+  my $root = $self->var($self->_rootvar);
+  $self->var($self->_varname('build'), path $root, 'ruby-build');
+  my $rbuild_repo = 'https://github.com/sstephenson/ruby-build';
+  $self->var($self->_varname('build_repo'), $rbuild_repo);
   $self
 }
 
+sub _rbuild { my $self = shift; $self->var($self->_varname('build')) }
+sub _rbuild_bin { path shift->_rbuild, 'bin', 'ruby-build' }
+
 sub available {
-  version_sort run qw/ruby-build --definitions/
+  version_sort run shift->_rbuild_bin, '--definitions'
+}
+
+sub _install_rbuild {
+  my $self = shift;
+  my $root = $self->var($self->_rootvar);
+  my $rbuild = $self->_rbuild;
+  return if -d $rbuild;
+  my $base = basename $rbuild;
+  my $rbuild_repo = $self->var($self->_varname('build_repo'));;
+  mkpath $base || die "Couldn't mkdir -p $base: $!";
+  system { 'git' } qw/git clone/, $rbuild_repo => $rbuild;
+}
+
+sub update {
+  my $self = shift;
+  my $rbuild = $self->_rbuild;
+  if (!-d $rbuild) {
+    $self->_install_rbuild;
+  } else {
+    push_dir $rbuild;
+    system { 'git' } qw/git pull/;
+    pop_dir;
+  }
+  -d $rbuild ? 'success' : 'fail'
 }
 
 sub after_path {
@@ -29,10 +60,12 @@ sub after_path {
 sub install {
   my ($self, $version) = @_;
   my $root = $self->var($self->_rootvar);
+  my $rbuild = $self->_rbuild;
+  $self->_install_rbuild;
   my $versions = $self->var($self->_versvar);
   my $prefix = path $versions, $version;
   <<BUILD;
-ruby-build $version $prefix &&
+$rbuild/bin/ruby-build $version $prefix &&
 verman ruby use $version gem install bundler
 BUILD
 }
