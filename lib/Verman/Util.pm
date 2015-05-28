@@ -38,6 +38,7 @@ sub path { File::Spec->catfile(@_) }
 sub need {
   for my $cmd (@_) {
     next if grep -e, map File::Spec->catfile($_, $cmd), File::Spec->path;
+    next if File::Spec->file_name_is_absolute($cmd) and -x $cmd;
     die "The \`$cmd\` command is required\n";
   }
 }
