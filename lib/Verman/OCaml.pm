@@ -44,6 +44,7 @@ rm -r $build &&
 mkdir -p $build &&
 cd $build &&
 tar --strip-components=1 -zx < $opam_tar &&
+sed -i -e 's!\\(sed -n -e .\\)s!\\11s!' configure &&
 eval \$(VERMAN_EVAL=1 verman ocaml use $version) &&
 ./configure --prefix=$prefix &&
 env -u MAKEFLAGS make lib-ext &&
