@@ -37,6 +37,7 @@ git archive $version | (cd $build ; tar x) &&
 printf 'Done\\n' &&
 cd $build &&
 ./configure -prefix $versions/$version &&
+sed -i -e 's%\\(chmod \\)-%\\1a-%' Makefile &&
 make world.opt &&
 make install &&
 (test -f $opam_tar || curl -L -o $opam_tar $opam_url) &&
