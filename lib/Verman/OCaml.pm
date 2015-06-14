@@ -51,7 +51,8 @@ eval \$(VERMAN_EVAL=1 verman ocaml use $version) &&
 env -u MAKEFLAGS make lib-ext &&
 make &&
 make install &&
-opam init --root=$opam_root -n -y
+opam init --root=$opam_root -n -y &&
+printf 'TODO: need to install camlp4 for OCaml >= 4.02.0\\n'
 BUILD
 }
 
