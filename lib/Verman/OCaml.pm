@@ -75,6 +75,9 @@ sub after_path {
   $self->pre_pathlike(PERL5LIB => path $syslib, 'perl5');
   $self->env_vars(OCAML_TOPLEVEL_PATH => path $syslib, 'toplevel');
   $self->pre_path(path $system, 'bin');
+
+  # Work around bug in `opam switch` setup detection:
+  $self->env_vars(MANPATH => ':'.$self->var('MANPATH'));
 }
 
 1;
