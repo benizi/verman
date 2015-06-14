@@ -146,10 +146,13 @@ sub no_pathlike {
 }
 
 sub pre_pathlike {
-  my ($self, $name, $path) = @_;
-  ($name, $path) = ('PATH', $name) unless $path;
+  my ($self, $name, @add) = @_;
+  ($name, @add) = ('PATH', $name) unless @add;
   #warn sprintf("%*s ", length($path), ' ')."$ENV{$name}\n";
-  $self->var_eval($name, $self->join_pathlike($path, $self->split_pathlike($self->var($name) || $ENV{$name})))
+  my @paths = $self->split_pathlike($self->var($name) || $ENV{$name});
+  my %seen;
+  @paths = grep !$seen{$_}++, @add, @paths;
+  $self->var_eval($name, $self->join_pathlike(@paths))
   #; warn "$ENV{$name}\n";
 }
 
