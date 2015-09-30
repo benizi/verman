@@ -59,7 +59,7 @@ sub use {
 
 sub installed {
   my ($self) = @_;
-  ls $self->var($self->_versvar)
+  version_sort ls $self->var($self->_versvar)
 }
 
 1;
