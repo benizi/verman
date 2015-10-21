@@ -6,7 +6,7 @@ use Verman::Util;
 
 sub new {
   my $self = shift->SUPER::new(@_);
-  $self->var($self->_varname('upstream'), 'https://github.com/joyent/node');
+  $self->var($self->_varname('upstream'), 'https://github.com/nodejs/node');
   $self
 }
 
