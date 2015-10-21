@@ -18,6 +18,7 @@ sub upstream {
 
 sub update {
   my $self = shift;
+  $self->_get_source;
   my $root = $self->var($self->_rootvar);
   run qw/git --git-dir/, path($root, 'git'), 'fetch'
 }
