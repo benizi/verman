@@ -135,7 +135,7 @@ sub no_pathlike {
   my ($self, $name, $reject, $prefix) = @_;
 
   my @path;
-  for my $dir ($self->split_pathlike($self->var($name) || $ENV{$name})) {
+  for my $dir ($self->split_pathlike($self->var($name) // $ENV{$name})) {
     my @split = File::Spec->splitdir($dir);
     #warn "$name $dir ? $reject\n";
     next if grep File::Spec->catdir(@split[0..$_]) eq $reject, 1..$#split;
@@ -149,7 +149,7 @@ sub pre_pathlike {
   my ($self, $name, @add) = @_;
   ($name, @add) = ('PATH', $name) unless @add;
   #warn sprintf("%*s ", length($path), ' ')."$ENV{$name}\n";
-  my @paths = $self->split_pathlike($self->var($name) || $ENV{$name});
+  my @paths = $self->split_pathlike($self->var($name) // $ENV{$name});
   my %seen;
   @paths = grep !$seen{$_}++, @add, @paths;
   $self->var_eval($name, $self->join_pathlike(@paths))
