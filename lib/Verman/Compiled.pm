@@ -35,12 +35,18 @@ sub _get_source {
 
 sub _tags {
   my $self = shift;
-  $self->_get_source;
   my $root = $self->var($self->_rootvar);
-  push_dir path $root, 'git';
-  my @tags = run qw/git tag/;
-  pop_dir;
-  @tags
+  my $git = path $root, 'git';
+  if (-d $git) {
+    push_dir $git;
+    my @tags = run qw/git tag/;
+    pop_dir;
+    @tags
+  } else {
+    map +(split '/')[-1],
+    grep m{^\w+\s+refs/tags/[^\^/]+$},
+    run qw/git ls-remote --tags/, $self->upstream
+  }
 }
 
 1;
