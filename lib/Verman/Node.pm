@@ -16,16 +16,22 @@ sub available {
 
 sub install {
   my ($self, $version) = @_;
-  $self->_get_source;
   my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $build = path $root, 'build', $version;
   my $prefix = path $versions, $version;
+  my $github = $self->upstream . "/archive/$version.tar.gz";
   <<BUILD;
-cd $root/git &&
 mkdir -p $build $versions &&
-printf 'Extracting...' &&
-git archive $version | (cd $build ; tar x) &&
+if test -d $root/git
+then
+  printf 'Extracting...' &&
+  cd $root/git &&
+  git archive $version | (cd $build ; tar x)
+else
+  printf 'Downloading...' &&
+  curl -Ls $github | (cd $build ; tar zx --strip-components=1)
+fi &&
 printf 'Done\\n' &&
 cd $build &&
 ./configure --prefix=$versions/$version &&
