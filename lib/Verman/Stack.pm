@@ -26,7 +26,7 @@ BUILD
 }
 
 sub available {
-  'v0.1.8.0'
+  qw{v0.1.8.0 v1.0.2}
 }
 
 1;
