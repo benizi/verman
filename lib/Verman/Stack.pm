@@ -29,4 +29,12 @@ sub available {
   qw{v0.1.8.0 v1.0.2}
 }
 
+sub after_path {
+  my $self = shift;
+  my $root = $self->var($self->_rootvar);
+  my $version = $self->var($self->_vervar);
+  my $stack_global_root = path $root, 'root', $version;
+  $self->env_vars(STACK_ROOT => $stack_global_root)
+}
+
 1;
