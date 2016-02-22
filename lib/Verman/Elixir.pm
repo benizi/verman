@@ -40,4 +40,11 @@ make PREFIX=$prefix install
 BUILD
 }
 
+sub after_path {
+  my $self = shift;
+  my $root = $self->var($self->_rootvar);
+  my $version = $self->var($self->_vervar);
+  $self->env_vars(MIX_HOME => path $root, 'versions', $version, 'mix')
+}
+
 1;
