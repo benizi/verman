@@ -58,7 +58,7 @@ sub _version_sort {
 
 sub available {
   my $self = shift;
-  $self->_version_sort(keys %{{$self->version_map}})
+  $self->_version_sort($self->_tags)
 }
 
 sub installed {
