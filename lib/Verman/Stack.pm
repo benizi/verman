@@ -13,15 +13,17 @@ sub install {
   my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $prefix = path $versions, $version;
+  my $stack_global_root = path $root, 'root', $version;
   my $cache = path $root, 'downloads';
   <<BUILD;
-mkdir -p $cache $prefix &&
+mkdir -p $cache $prefix $stack_global_root &&
 printf 'Downloading %s...\\n' "$url" &&
 (test -f $cache/$file || curl -L -o $cache/$file $url) &&
 printf 'Done\\n' &&
 tar --strip-components=1 -xzf $cache/$file -C $prefix &&
 mkdir -p $prefix/bin &&
-mv $prefix/stack $prefix/bin/
+mv $prefix/stack $prefix/bin/ &&
+printf 'system-ghc: false\n' > $stack_global_root/config.yaml
 BUILD
 }
 
