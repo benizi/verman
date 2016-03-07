@@ -46,6 +46,7 @@ sub use {
   my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $home = path $versions, $version;
+  return $self->use(readlink $home, @rest) if -l $home;
   return 'No such '.$self->_name unless -d $home;
   $self->env_vars($self->_varname('home') => $home);
   $self->var($self->_vervar => $version);
@@ -55,6 +56,19 @@ sub use {
   $self->after_path if $self->can('after_path');
   exec { $rest[0] } @rest if @rest;
   "using $version"
+}
+
+sub alias {
+  my ($self, $version, $to) = @_;
+  my $root = $self->var($self->_rootvar);
+  my $versions = $self->var($self->_versvar);
+  my $from = path $versions, $version;
+  return "Version {$version} not found" unless -d $from;
+  return "Version {$version} is an alias" if -l $from;
+  my $dest = path $versions, $to;
+  return "Alias {$to} is already an installed version" if -d $dest and not -l $dest;
+  symlink $version, $dest;
+  "$to => $version"
 }
 
 sub installed {
