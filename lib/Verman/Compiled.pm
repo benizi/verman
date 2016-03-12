@@ -63,10 +63,7 @@ sub _tags {
   my $root = $self->var($self->_rootvar);
   my $git = path $root, 'git';
   if (-d $git) {
-    push_dir $git;
-    my @tags = run qw/git tag/;
-    pop_dir;
-    @tags
+    run qw/git --git-dir/, $git, 'tag'
   } else {
     map +(split '/')[-1],
     grep m{^\w+\s+refs/tags/[^\^/]+$},
