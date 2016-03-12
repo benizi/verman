@@ -41,24 +41,19 @@ sub after_path {
   }
 }
 
-sub install {
-  my ($self, $version) = @_;
-  $self->_get_source;
+sub _make_install {
+  my ($self, $goroot, $version) = @_;
   my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $build = path $root, 'build', $version;
-  my $goroot = path $versions, $version;
+  my $gopath = path $root, 'path', $version;
   my $bootstrap = path $versions, 'go1.4.1';
   <<BUILD;
-cd $root/git &&
-mkdir -p $build $versions &&
-printf 'Extracting...' &&
-git archive $version | (cd $build ; tar x) &&
-printf 'Done\\n' &&
-cd $build/src &&
-GOROOT_BOOTSTRAP=$bootstrap GOROOT_FINAL=$versions/$version sh ./all.bash &&
-mv $build $versions &&
-GOPATH=$root/path/$version $goroot/bin/go get golang.org/x/tools/cmd/...
+cd src
+GOROOT_BOOTSTRAP=$bootstrap GOROOT_FINAL=$goroot sh ./all.bash
+cd $root
+mv $build $versions
+GOPATH=$gopath $goroot/bin/go get golang.org/x/tools/cmd/...
 BUILD
 }
 

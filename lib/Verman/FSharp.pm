@@ -20,20 +20,9 @@ sub available {
   version_sort @tags;
 }
 
-sub install {
-  my ($self, $version) = @_;
-  $self->_get_source;
-  my $root = $self->var($self->_rootvar);
-  my $versions = $self->var($self->_versvar);
-  my $build = path $root, 'build', $version;
-  my $prefix = path $versions, $version;
+sub _make_install {
+  my ($self, $prefix) = @_;
   <<BUILD;
-cd $root/git &&
-mkdir -p $build $versions &&
-printf 'Extracting...' &&
-git archive $version | (cd $build ; tar x) &&
-printf 'Done\\n' &&
-cd $build &&
 ./autogen.sh --prefix="$prefix" &&
 make &&
 make install

@@ -10,23 +10,9 @@ sub new {
   $self
 }
 
-sub install {
-  my ($self, $version) = @_;
-  $self->_get_source;
-  my %vmap = $self->version_map;
-  die "Couldn't find tag for $version\n" unless exists $vmap{$version};
-  my $tag = $vmap{$version};
-  my $root = $self->var($self->_rootvar);
-  my $versions = $self->var($self->_versvar);
-  my $build = path $root, 'build', $version;
-  my $prefix = path $versions, $version;
+sub _make_install {
+  my ($self, $prefix) = @_;
   <<BUILD;
-cd $root/git &&
-mkdir -p $build $versions &&
-printf 'Extracting...' &&
-git archive $tag | (cd $build ; tar x) &&
-printf 'Done\\n' &&
-cd $build &&
 ./otp_build autoconf &&
 ./configure --prefix=$prefix &&
 make &&
