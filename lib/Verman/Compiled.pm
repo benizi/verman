@@ -33,20 +33,31 @@ sub _get_source {
   system { 'git' } qw/git clone --bare/, $url, $git
 }
 
+sub _archive_path {
+  my ($self, $version) = @_;
+  $self->upstream . "/archive/$version.tar.gz"
+}
+
+sub _unpack_remote {
+  my ($self, $version) = @_;
+  my $archive = $self->_archive_path($version);
+  "curl -Ls $archive | tar zx --strip-components=1"
+}
+
 sub _setup_build {
   my ($self, $version) = @_;
   my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $build = path $root, 'build', $version;
   my $prefix = path $versions, $version;
-  my $github = $self->upstream . "/archive/$version.tar.gz";
+  my $unpack_remote = $self->_unpack_remote($version);
   <<CHECKOUT;
 set -e
 mkdir -p $build $versions
 cd $build
 if test -d $root/git
 then git --git-dir=$root/git archive $version | tar x
-else curl -Ls $github | tar zx --strip-components=1
+else $unpack_remote
 fi
 CHECKOUT
 }

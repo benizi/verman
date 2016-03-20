@@ -41,6 +41,12 @@ sub after_path {
   }
 }
 
+sub _unpack_remote {
+  my ($self, $version) = @_;
+  my $url = $self->upstream . "/+archive/$version.tar.gz";
+  "curl -Ls $url | tar zx"
+}
+
 sub _make_install {
   my ($self, $goroot, $version) = @_;
   my $root = $self->var($self->_rootvar);
