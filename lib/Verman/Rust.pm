@@ -7,9 +7,13 @@ use Verman::Util qw/path mkpath/;
 sub after_path {
   my $self = shift;
   my $root = $self->var($self->_rootvar);
-  my $lib = path $self->var($self->_versvar), $self->var($self->_vervar), 'lib';
+  my $version = path $self->var($self->_versvar), $self->var($self->_vervar);
+  my $lib = path $version, 'lib';
+  my $cargo = path $version, 'cargo';
   $self->no_pathlike(LD_LIBRARY_PATH => $root, 1);
-  $self->pre_pathlike(LD_LIBRARY_PATH => $lib)
+  $self->pre_pathlike(LD_LIBRARY_PATH => $lib);
+  $self->pre_path(path $cargo, 'bin');
+  $self->env_vars(CARGO_HOME => $cargo);
 }
 
 sub _triple {
