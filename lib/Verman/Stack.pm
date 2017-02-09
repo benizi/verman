@@ -1,13 +1,19 @@
 package Verman::Stack;
 use strict;
 use warnings;
-use base 'Verman::SelfContained';
-use Verman::Util qw/path/;
+use base 'Verman::SelfContained', 'Verman::Compiled';
+use Verman::Util qw/path version_sort/;
+
+sub new {
+  my $self = shift->SUPER::new(@_);
+  $self->var($self->_varname('upstream'), 'https://github.com/commercialhaskell/stack');
+  $self
+}
 
 sub install {
   my ($self, $version) = @_;
   (my $vnum = $version) =~ s/^v//;
-  my $download = "https://github.com/commercialhaskell/stack/releases/download";
+  my $download = $self->upstream . '/releases/download';
   my $file = "stack-$vnum-linux-x86_64.tar.gz";
   my $url = "$download/v$vnum/$file";
   my $root = $self->var($self->_rootvar);
@@ -28,7 +34,7 @@ BUILD
 }
 
 sub available {
-  qw{v0.1.8.0 v1.0.2}
+  version_sort grep /^v/, shift->SUPER::_tags
 }
 
 sub after_path {
