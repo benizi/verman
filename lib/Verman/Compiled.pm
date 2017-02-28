@@ -45,28 +45,33 @@ sub _unpack_remote {
 }
 
 sub _setup_build {
-  my ($self, $version) = @_;
+  my ($self, $version, $tag) = @_;
   my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $build = path $root, 'build', $version;
   my $prefix = path $versions, $version;
-  my $unpack_remote = $self->_unpack_remote($version);
+  my $unpack_remote = $self->_unpack_remote($tag);
   <<CHECKOUT;
 set -e
 mkdir -p $build $versions
 cd $build
 if test -d $root/git
-then git --git-dir=$root/git archive $version | tar x
+then git --git-dir=$root/git archive $tag | tar x
 else $unpack_remote
 fi
 CHECKOUT
 }
 
 sub install {
-  my ($self, $version) = @_;
+  my $self = shift;
+  my ($version, $tag) = @_;
+  unless (defined $tag) {
+    $tag = $version;
+    push @_, $tag;
+  }
   return 'No _make_install for '.ref($self) unless $self->can('_make_install');
   my $prefix = path $self->var($self->_versvar), $version;
-  join '', $self->_setup_build($version), $self->_make_install($prefix, $version)
+  join '', $self->_setup_build(@_), $self->_make_install($prefix, @_)
 }
 
 sub _tags {
