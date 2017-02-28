@@ -34,13 +34,13 @@ sub _get_source {
 }
 
 sub _archive_path {
-  my ($self, $version) = @_;
-  $self->upstream . "/archive/$version.tar.gz"
+  my ($self, $tag) = @_;
+  $self->upstream . "/archive/$tag.tar.gz"
 }
 
 sub _unpack_remote {
-  my ($self, $version) = @_;
-  my $archive = $self->_archive_path($version);
+  my ($self, $tag) = @_;
+  my $archive = $self->_archive_path($tag);
   "curl -Ls $archive | tar zx --strip-components=1"
 }
 
