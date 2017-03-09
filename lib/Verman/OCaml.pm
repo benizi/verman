@@ -66,6 +66,10 @@ sub after_path {
   my $system = path $opam, 'system';
   my $syslib = path $system, 'lib';
 
+  for my $var (qw/CAML_LD_LIBRARY_PATH MANPATH PERL5LIB/) {
+    $self->no_pathlike($var, $versions);
+  }
+
   $self->env_vars(OPAMROOT => $opam);
   $self->pre_pathlike(
     CAML_LD_LIBRARY_PATH =>
