@@ -23,4 +23,12 @@ make install
 BUILD
 }
 
+sub after_path {
+  my ($self) = @_;
+  my $versions = $self->var($self->_versvar);
+  my $v = $self->var($self->_vervar);
+  $self->no_pathlike(NODE_PATH => $versions, 1);
+  $self->pre_pathlike(NODE_PATH => path $versions, $v, 'lib', 'node_modules');
+}
+
 1;
