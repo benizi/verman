@@ -1,7 +1,7 @@
 package Verman::Ruby;
 use strict;
 use warnings;
-use base 'Verman::SelfContained';
+use base 'Verman::Nix', 'Verman::SelfContained';
 use Verman::Util;
 
 sub new {

@@ -1,7 +1,7 @@
 package Verman::Go;
 use strict;
 use warnings;
-use base 'Verman::SelfContained', 'Verman::Compiled';
+use base 'Verman::Nix', 'Verman::SelfContained', 'Verman::Compiled';
 use Verman::Util;
 
 sub new {
@@ -62,5 +62,7 @@ mv $build $versions
 GOPATH=$gopath $goroot/bin/go get golang.org/x/tools/cmd/...
 BUILD
 }
+
+sub _nix_version_separator { '' }
 
 1;
