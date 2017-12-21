@@ -15,11 +15,11 @@ sub _nix_store_dirs {
   for (ls $store) {
     my $base = $_;
     next unless s/$pfx//;
-    my ($hash, $v) = ($1, $_);
-    next if $v =~ /-[a-z]+$/;
+    next if /-[a-z]+$/;
+    my $v = $_;
     my $full = "$store/$base";
     next unless -d $full;
-    push @ret, {hash => $hash, version => $v, base => $base, full => $full};
+    push @ret, {version => $v, full => $full};
   }
   @ret
 }
