@@ -63,6 +63,6 @@ GOPATH=$gopath $goroot/bin/go get golang.org/x/tools/cmd/...
 BUILD
 }
 
-sub _nix_version_separator { '' }
+sub _nix_version_prefix { 'go' }
 
 1;

@@ -12,7 +12,7 @@ sub nixversion {
     s{^/nix/store/\w+-$exe-}{};
     s{\/.*$}{};
   }
-  map $self->normalversion($_), @files
+  map $self->to_display_version($_), @files
 }
 
 sub installed {
@@ -23,9 +23,9 @@ sub installed {
 sub nixpkg { shift->_nixpkg }
 sub exe { shift->_nixpkg }
 
-sub normalversion {
+sub to_display_version {
   my ($self, $v) = @_;
-  $self->_nix_normal($v)
+  $self->_nix_display($v)
 }
 
 sub _nixpkg {
@@ -34,11 +34,18 @@ sub _nixpkg {
   lc $pkg
 }
 
-sub _nix_version_prefix { 'nix' }
-sub _nix_version_separator { '-' }
-sub _nix_normal {
+sub _nix_version_prefix { '' }
+sub _nix_version_suffix { '-nix' }
+sub _nix_display {
   my ($self, $v) = @_;
-  join $self->_nix_version_separator, $self->_nix_version_prefix, $v
+  join '', $self->_nix_version_prefix, $_, $self->_nix_version_suffix
+}
+sub _nix_parse {
+  my ($self, $v) = @_;
+  my ($pre, $suf) = ($self->_nix_version_prefix, $self->_nix_version_suffix);
+  $v =~ s/^\Q$pre\E//;
+  $v =~ s/\Q$suf\E$//;
+  $v
 }
 
 1;
