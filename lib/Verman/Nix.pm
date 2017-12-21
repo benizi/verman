@@ -42,12 +42,5 @@ sub _nix_display {
   my ($self, $v) = @_;
   join '', $self->_nix_version_prefix, $_, $self->_nix_version_suffix
 }
-sub _nix_parse {
-  my ($self, $v) = @_;
-  my ($pre, $suf) = ($self->_nix_version_prefix, $self->_nix_version_suffix);
-  $v =~ s/^\Q$pre\E//;
-  $v =~ s/\Q$suf\E$//;
-  $v
-}
 
 1;
