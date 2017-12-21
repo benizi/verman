@@ -10,6 +10,11 @@ sub new {
   $self
 }
 
+sub _global_root {
+  my ($self) = @_;
+  path $self->var($self->_rootvar), 'root'
+}
+
 sub install {
   my ($self, $version) = @_;
   (my $vnum = $version) =~ s/^v//;
@@ -19,7 +24,7 @@ sub install {
   my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $prefix = path $versions, $version;
-  my $stack_global_root = path $root, 'root', $version;
+  my $stack_global_root = $self->_global_root;
   my $cache = path $root, 'downloads';
   <<BUILD;
 mkdir -p $cache $prefix $stack_global_root &&
@@ -39,10 +44,7 @@ sub available {
 
 sub after_path {
   my $self = shift;
-  my $root = $self->var($self->_rootvar);
-  my $version = $self->var($self->_vervar);
-  my $stack_global_root = path $root, 'root', $version;
-  $self->env_vars(STACK_ROOT => $stack_global_root)
+  $self->env_vars(STACK_ROOT => $self->_global_root);
 }
 
 1;
