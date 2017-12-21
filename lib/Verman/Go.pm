@@ -10,8 +10,14 @@ sub new {
   $self
 }
 
-sub available {
+sub _non_nix_available {
   version_sort grep /^go/, shift->SUPER::_tags
+}
+
+sub _nix_stub_dirs {
+  my ($self, $v) = @_;
+  my ($root, $versions) = map $self->var($self->$_), qw/_rootvar _versvar/;
+  map path(@$_, $v), [$versions], [$root, 'path']
 }
 
 sub after_path {

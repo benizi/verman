@@ -16,7 +16,7 @@ sub new {
 sub _rbuild { my $self = shift; $self->var($self->_varname('build')) }
 sub _rbuild_bin { path shift->_rbuild, 'bin', 'ruby-build' }
 
-sub available {
+sub _non_nix_available {
   version_sort run shift->_rbuild_bin, '--definitions'
 }
 
