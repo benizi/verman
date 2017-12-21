@@ -1,7 +1,7 @@
 package Verman::Ruby;
 use strict;
 use warnings;
-use base 'Verman::Nix', 'Verman::SelfContained';
+use base 'Verman::Nix', 'Verman::SelfContained', 'Verman::Compiled';
 use Verman::Util;
 
 sub new {
@@ -57,15 +57,21 @@ sub after_path {
   # TODO: jRuby-specific vars
 }
 
-sub install {
-  my ($self, $version) = @_;
-  my $root = $self->var($self->_rootvar);
+sub _setup_build {}
+
+sub _make_install {
+  my ($self, $prefix, $version) = @_;
   my $rbuild = $self->_rbuild;
   $self->_install_rbuild;
-  my $versions = $self->var($self->_versvar);
-  my $prefix = path $versions, $version;
   <<BUILD;
-$rbuild/bin/ruby-build $version $prefix &&
+set -e
+$rbuild/bin/ruby-build $version $prefix
+BUILD
+}
+
+sub _post_build {
+  my ($self, $version) = @_;
+  <<BUILD;
 verman ruby use $version gem install bundler
 BUILD
 }

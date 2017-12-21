@@ -62,6 +62,8 @@ fi
 CHECKOUT
 }
 
+sub _post_build {}
+
 sub install {
   my $self = shift;
   my ($version, $tag) = @_;
@@ -71,7 +73,9 @@ sub install {
   }
   return 'No _make_install for '.ref($self) unless $self->can('_make_install');
   my $prefix = path $self->var($self->_versvar), $version;
-  join '', $self->_setup_build(@_), $self->_make_install($prefix, @_)
+  $self->_setup_build(@_),
+  $self->_make_install($prefix, @_),
+  $self->_post_build(@_)
 }
 
 sub _tags {
