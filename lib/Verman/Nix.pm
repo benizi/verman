@@ -3,6 +3,8 @@ use mro;
 use strict;
 use warnings;
 
+our $_abstract;
+
 sub nixversion {
   my $self = shift;
   my $exe = $self->exe;
