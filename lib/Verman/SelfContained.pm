@@ -54,7 +54,7 @@ sub use {
   $self->no_path($root);
   $self->pre_path(path $home, 'bin');
   $self->after_path if $self->can('after_path');
-  exec { $rest[0] } @rest if @rest;
+  $self->exec(@rest) if @rest;
   "using $version"
 }
 

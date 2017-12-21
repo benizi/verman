@@ -48,13 +48,29 @@ sub var_eval {
   $self->eval(@rest)
 }
 
-sub evalout {
+sub _effects {
   my $self = shift;
-  my @eval = @{$$self{eval}};
   my %seen;
-  @eval = reverse grep !$seen{$$_[0]}++, reverse @eval;
-  #warn join('', ($$_[-1] ? 'export ' : ''), join('=', @$_[0,1]), "\n") for @eval;
-  print $$_[-1] ? 'export ' : '', join('=', @$_[0,1]), "\n" for @eval;
+  reverse grep !$seen{$$_[0]}++, reverse @{$$self{eval}}
+}
+
+sub _evalout {
+  map join('', $$_[-1] ? 'export ' : '', join('=', @$_[0,1])), shift->_effects
+}
+
+sub evalout {
+  print $_, $/ for shift->_evalout;
+}
+
+sub exec {
+  my ($self, @cmd) = @_;
+  for ($self->_effects) {
+    my ($var, $val, $exported) = @$_;
+    next unless $exported;
+    $ENV{$var} = $val;
+  }
+  exec { $cmd[0] } @cmd;
+  exit $!
 }
 
 sub var_name {

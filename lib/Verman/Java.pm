@@ -15,7 +15,7 @@ sub use {
   );
   $self->no_path($root);
   $self->pre_path(path $home, 'bin');
-  exec { $rest[0] } @rest if @rest;
+  $self->exec(@rest) if @rest;
   "using $version"
 }
 
