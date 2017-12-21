@@ -22,7 +22,6 @@ sub available {
 
 sub _install_rbuild {
   my $self = shift;
-  my $root = $self->var($self->_rootvar);
   my $rbuild = $self->_rbuild;
   return if -d $rbuild;
   my $base = basename $rbuild;
@@ -46,7 +45,6 @@ sub update {
 
 sub after_path {
   my $self = shift;
-  my $root = $self->var($self->_rootvar);
   my $versions = $self->var($self->_versvar);
   my $version = $self->var($self->_vervar);
   my $base = path $versions, $version;
