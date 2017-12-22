@@ -24,10 +24,34 @@ sub _nix_store_dirs {
   @ret
 }
 
+sub _nix_env_versions {
+  my $self = shift;
+  my $pkg = $self->nixpkg;
+  my $search = join '-', $pkg, @_;
+  my @ret;
+  for (readpipe "nix-env -qas --drv-path --out-path $search") {
+    chomp;
+    my ($status, $name, $drv, $out) = split;
+    my @status = split //, $status;
+    my $flags = {};
+    # Nix status marker is three chars:
+    for my $flag (
+      'installed', # I.. - installed
+      'present', # .P. - present (instantiated)
+      'substitution', # ..S - substitution available (usually a binary install)
+    ) {
+      $$flags{$flag} = ('-' ne shift @status) ? 1 : 0;
+    }
+    (my $v = $name) =~ s/^\Q$pkg\E-//;
+    push @ret, {version => $v, full => $out, drv => $drv, flags => $flags};
+  }
+  @ret
+}
+
 sub nix_versions {
   my ($self) = @_;
   my %pkgs;
-  $pkgs{$_}++ for map $$_{version}, $self->_nix_store_dirs;
+  $pkgs{$$_{version}}++ for $self->_nix_store_dirs, $self->_nix_env_versions;
   map $self->to_display_version($_), keys %pkgs
 }
 
@@ -46,22 +70,29 @@ sub install {
   my $post_install = $self->can('_post_build') || sub {};
   my $prefix = path $self->var($self->_versvar), $v;
   $mkdirs{$_}++ for $prefix, $self->$nix_stubs($v);
-  my @mkdirs = keys %mkdirs;
+  my @mkdirs = map "mkdir -p $_", keys %mkdirs;
+  my ($nix_root, @nix_drv);
+  for my $finder (qw/_nix_instantiated _nix_env_versions/) {
+    next unless my ($found) = $self->$finder($nix_v);
+    $nix_root = $$found{full};
+    push @nix_drv, $$found{drv} unless -d $nix_root;
+    last;
+  }
+  die "Couldn't find version ($v) in Nix store or pkgs\n" unless $nix_root;
+  my @nix_install = map "nix-store -r $_", @nix_drv;
+  my $ln = "ln -sf --target-directory=$prefix $nix_root/bin";
+  my @post = $self->$post_install($v);
+  'set -e', @nix_install, @mkdirs, $ln, @post
+}
+
+sub _nix_instantiated {
   # Find the newest entry in the store (by ctime) that has a matching version.
-  my ($nix_root) =
-    map $$_[0],
-    sort { $$b[1] <=> $$a[1] }
-    map [$_, (stat)[10]],
-    map $$_{full},
-    grep $$_{version} eq $nix_v,
-    $self->_nix_store_dirs;
-  die "Couldn't find version ($v) in /nix/store\n" unless $nix_root;
-  my $nix_bin = path $nix_root, 'bin';
-  <<INSTALL, $self->$post_install($v);
-set -e
-mkdir -p @mkdirs
-ln -sf --target-directory=$prefix $nix_bin
-INSTALL
+  my ($self, $nix_v) = @_;
+  map $$_[0],
+  sort { $$b[1] <=> $$a[1] }
+  map [$_, (stat)[10]],
+  grep $$_{version} eq $nix_v,
+  $self->_nix_store_dirs
 }
 
 sub nixpkg { shift->_nixpkg }
