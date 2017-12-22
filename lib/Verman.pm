@@ -270,7 +270,8 @@ sub cmd {
   if ($ENV{VERMAN_EVAL}) {
     $runner->evalout;
   } else {
-    print "$_\n" for @ret;
+    s/\n?\Z/\n/ for @ret;
+    print @ret;
   }
 }
 
