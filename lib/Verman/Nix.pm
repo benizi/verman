@@ -21,7 +21,7 @@ sub _nix_store_dirs {
     next unless -d $full;
     push @ret, {version => $v, full => $full};
   }
-  @ret
+  $self->_dbg_packages(_nix_store_dirs => @ret)
 }
 
 sub _nix_env_versions {
@@ -44,6 +44,15 @@ sub _nix_env_versions {
     }
     (my $v = $name) =~ s/^\Q$pkg\E-//;
     push @ret, {version => $v, full => $out, drv => $drv, flags => $flags};
+  }
+  $self->_dbg_packages(_nix_env_versions => @ret)
+}
+
+sub _dbg_packages {
+  my ($self, $fn, @ret) = @_;
+  if (exists $ENV{verman_debug}) {
+    eval { require Data::Dumper };
+    warn Data::Dumper->new([\@ret],['*'.$fn])->Terse(0)->Indent(1)->Dump;
   }
   @ret
 }
