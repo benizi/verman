@@ -62,13 +62,17 @@ sub evalout {
   print $_, $/ for shift->_evalout;
 }
 
-sub exec {
-  my ($self, @cmd) = @_;
+sub _setenv {
+  my $self = shift;
   for ($self->_effects) {
     my ($var, $val, $exported) = @$_;
-    next unless $exported;
-    $ENV{$var} = $val;
+    $ENV{$var} = $val if $exported;
   }
+}
+
+sub exec {
+  my ($self, @cmd) = @_;
+  $self->_setenv;
   exec { $cmd[0] } @cmd;
   exit $!
 }
