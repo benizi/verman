@@ -7,4 +7,22 @@ use File::Spec;
 use lib File::Spec->catfile(dirname($RealBin), 'lib');
 use Verman;
 
-Verman->new->cmd($0, @ARGV);
+sub sep {
+  local $_ = $_ // shift;
+  /\A[+;]\Z/
+}
+
+my @cmds;
+
+cmd: while (@ARGV) {
+  shift if sep $ARGV[0];
+  arg: for my $i (0..$#ARGV) {
+    next arg unless sep $ARGV[$i];
+    push @cmds, [splice @ARGV, 0, $i];
+    next cmd;
+  }
+  push @cmds, [splice @ARGV];
+}
+
+my $v = Verman->new;
+$v->cmd($0, @$_) for @cmds;
