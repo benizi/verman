@@ -80,18 +80,18 @@ sub install {
   my $prefix = path $self->var($self->_versvar), $v;
   $mkdirs{$_}++ for $prefix, $self->$nix_stubs($v);
   my @mkdirs = map "mkdir -p $_", keys %mkdirs;
-  my ($nix_root, @nix_drv);
+  my ($nix_root, $store_path);
   for my $finder (qw/_nix_instantiated _nix_env_versions/) {
     next unless my ($found) = $self->$finder($nix_v);
     $nix_root = $$found{full};
-    push @nix_drv, $$found{drv} unless -d $nix_root;
+    ($store_path) = ((grep -e, $$found{drv}), $nix_root);
     last;
   }
   die "Couldn't find version ($v) in Nix store or pkgs\n" unless $nix_root;
-  my @nix_install = map "nix-store -r $_", @nix_drv;
+  my $realize = "nix-store -r $store_path";
   my $ln = "ln -sf --target-directory=$prefix $nix_root/bin";
   my @post = $self->$post_install($v);
-  'set -e', @nix_install, @mkdirs, $ln, @post
+  'set -e', $realize, @mkdirs, $ln, @post
 }
 
 sub _nix_instantiated {
