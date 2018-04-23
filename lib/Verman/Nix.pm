@@ -84,7 +84,7 @@ sub install {
   for my $finder (qw/_nix_instantiated _nix_env_versions/) {
     next unless my ($found) = $self->$finder($nix_v);
     $nix_root = $$found{full};
-    ($store_path) = ((grep -e, $$found{drv}), $nix_root);
+    ($store_path) = ((grep -e, $$found{drv}//""), $nix_root);
     last;
   }
   die "Couldn't find version ($v) in Nix store or pkgs\n" unless $nix_root;
