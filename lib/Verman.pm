@@ -6,6 +6,7 @@ use FindBin '$Bin';
 use File::Basename;
 use File::Find;
 use Config;
+use Data::Dumper;
 use Verman::Util;
 our $_abstract;
 
@@ -273,6 +274,8 @@ sub cmd {
 
   if ($ENV{VERMAN_EVAL}) {
     $runner->evalout;
+  } elsif ($ENV{VERMAN_DUMP}) {
+    print Data::Dumper->new([\@ret], [qw(ret)])->Indent(1)->Terse(1)->Dump;
   } else {
     s/\n?\Z/\n/ for @ret;
     print @ret;
