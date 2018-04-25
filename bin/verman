@@ -28,7 +28,7 @@ sub parse_cmds {
 
 sub main {
   my $v = Verman->new;
-  my @cmds = parse_cmds(@_);
+  my @cmds = (exists $ENV{verman_old}) ? [@_] : parse_cmds(@_);
   $v->cmd($0, @$_) for @cmds;
 }
 
