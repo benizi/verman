@@ -78,7 +78,8 @@ sub install {
   my $nix_stubs = $self->can('_nix_stub_dirs') || sub {};
   my $post_install = $self->can('_post_build') || sub {};
   my $prefix = path $self->var($self->_versvar), $v;
-  $mkdirs{$_}++ for $prefix, $self->$nix_stubs($v);
+  my $gcroot = path '/nix/var/nix/gcroots/per-user', $ENV{USER};
+  $mkdirs{$_}++ for $prefix, $gcroot, $self->$nix_stubs($v);
   my @mkdirs = map "mkdir -p $_", keys %mkdirs;
   my ($nix_root, $store_path);
   for my $finder (qw/_nix_instantiated _nix_env_versions/) {
@@ -89,9 +90,12 @@ sub install {
   }
   die "Couldn't find version ($v) in Nix store or pkgs\n" unless $nix_root;
   my $realize = "nix-store -r $store_path";
-  my $ln = "ln -sf --target-directory=$prefix $nix_root/bin";
+  my @ln = map {
+    my ($target, $source) = @$_;
+    "ln -sf --target-directory=$target $source";
+  } [$prefix, "$nix_root/bin"], [$gcroot, $nix_root];
   my @post = $self->$post_install($v);
-  'set -e', $realize, @mkdirs, $ln, @post
+  'set -e', $realize, @mkdirs, @ln, @post
 }
 
 sub _nix_instantiated {
