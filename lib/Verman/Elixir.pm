@@ -1,7 +1,7 @@
 package Verman::Elixir;
 use strict;
 use warnings;
-use base 'Verman::SelfContained', 'Verman::Compiled';
+use base qw/Verman::Nix Verman::SelfContained Verman::Compiled/;
 use Verman::Util;
 
 sub new {
@@ -10,8 +10,14 @@ sub new {
   $self
 }
 
-sub available {
+sub _non_nix_available {
   version_sort grep /^v/, shift->SUPER::_tags
+}
+
+sub _nix_stub_dirs {
+  my ($self, $v) = @_;
+  my ($root, $versions) = map $self->var($self->$_), qw/_rootvar _versvar/;
+  map path(@$_, $v), [$versions], [$root, 'mix'];
 }
 
 sub _make_install {
@@ -29,5 +35,7 @@ sub after_path {
   my $version = $self->var($self->_vervar);
   $self->env_vars(MIX_HOME => path $root, 'versions', $version, 'mix')
 }
+
+sub _nix_version_prefix { 'v' }
 
 1;
