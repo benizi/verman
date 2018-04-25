@@ -12,17 +12,24 @@ sub sep {
   /\A[+;]\Z/
 }
 
-my @cmds;
-
-cmd: while (@ARGV) {
-  shift if sep $ARGV[0];
-  arg: for my $i (0..$#ARGV) {
-    next arg unless sep $ARGV[$i];
-    push @cmds, [splice @ARGV, 0, $i];
-    next cmd;
+sub parse_cmds {
+  my @cmds;
+  cmd: while (@_) {
+    shift if sep $_[0];
+    arg: for my $i (0..$#_) {
+      next arg unless sep $_[$i];
+      push @cmds, [splice @_, 0, $i];
+      next cmd;
+    }
+    push @cmds, [splice @_];
   }
-  push @cmds, [splice @ARGV];
+  @cmds
 }
 
-my $v = Verman->new;
-$v->cmd($0, @$_) for @cmds;
+sub main {
+  my $v = Verman->new;
+  my @cmds = parse_cmds(@_);
+  $v->cmd($0, @$_) for @cmds;
+}
+
+main @ARGV;
