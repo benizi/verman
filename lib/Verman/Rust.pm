@@ -2,7 +2,7 @@ package Verman::Rust;
 use strict;
 use warnings;
 use base 'Verman::SelfContained';
-use Verman::Util qw/path mkpath/;
+use Verman::Util qw/path mkpath version_sort/;
 
 sub after_path {
   my $self = shift;
@@ -48,7 +48,7 @@ sub available {
   }
   my $triple = $self->_triple;
   my $triple_tar = qr/\Q$triple.tar.gz\E/;
-  map +(split '-')[1], grep /^rust-\d.*-$triple_tar$/, @files
+  version_sort map +(split '-')[1], grep /^rust-\d.*-$triple_tar$/, @files
 }
 
 sub install {
