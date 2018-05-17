@@ -62,12 +62,13 @@ sub install {
   my $prefix = path $versions, $version;
   my $cache = path $root, 'downloads';
   <<BUILD;
-mkdir -p $build $cache $versions &&
-printf 'Downloading %s...\\n' "$url" &&
-(test -f $cache/$file || curl -o $cache/$file \\
- $url) &&
-printf 'Done\\n' &&
-tar xzf $cache/$file -C $build &&
+set -e
+mkdir -p $build $cache $versions
+printf 'Downloading %s...\\n' "$url"
+test -f $cache/$file || curl -o $cache/$file \\
+ $url
+printf 'Done\\n'
+tar xzf $cache/$file -C $build
 $build/$base/install.sh --prefix=$prefix
 BUILD
 }
