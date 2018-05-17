@@ -17,7 +17,9 @@ sub after_path {
 }
 
 sub _triple {
-  (map +(split)[1], grep /^Target:/, readpipe 'clang --version')[0]
+  local $_ = (map +(split)[1], grep /^Target:/, readpipe 'clang --version')[0];
+  s/(?<=-)pc(?=-linux)/unknown/;
+  $_
 }
 
 sub _dist {
