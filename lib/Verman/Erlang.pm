@@ -66,6 +66,13 @@ sub version_map {
   %ret;
 }
 
+sub _version_tag {
+  my ($self, $version) = @_;
+  my $tag = $version;
+  /^OTP[-_]/i || s/^(?=\d)/OTP-/ || s/^(?=r)/OTP_/ for $tag;
+  uc $tag;
+}
+
 1;
 __END__
 

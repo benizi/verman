@@ -68,7 +68,7 @@ sub install {
   my $self = shift;
   my ($version, $tag) = @_;
   unless (defined $tag) {
-    $tag = $version;
+    $tag = $self->_version_tag($version);
     push @_, $tag;
   }
   return 'No _make_install for '.ref($self) unless $self->can('_make_install');
@@ -77,6 +77,8 @@ sub install {
   $self->_make_install($prefix, @_),
   $self->_post_build(@_)
 }
+
+sub _version_tag { $_[1] }
 
 sub _tags {
   my $self = shift;
