@@ -13,9 +13,10 @@ sub new {
 sub _make_install {
   my ($self, $prefix) = @_;
   <<BUILD;
-./otp_build autoconf &&
-./configure --prefix=$prefix &&
-make &&
+set -e
+./otp_build autoconf
+./configure --prefix=$prefix
+make
 make install
 BUILD
 }
