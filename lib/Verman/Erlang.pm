@@ -12,28 +12,24 @@ sub new {
 
 sub _make_install {
   my ($self, $prefix) = @_;
-  my $flags = $self->_arch_openssl;
+  my ($cmds, $flags) = $self->_arch_openssl;
   <<BUILD;
 set -e
 ./otp_build autoconf
-./configure --prefix=$prefix$flags
+${cmds}./configure --prefix=$prefix$flags
 make
 make install
 BUILD
 }
 
 sub _arch_openssl {
-  my %flags = (
-    '--with-ssl' => [qw(/usr/lib/openssl-1.0 libssl.so)],
-    '--with-ssl-incl' => [qw(/usr/include/openssl-1.0 openssl/aes.h)],
-  );
-  my @flags = ('');
-  while (my ($flag, $v) = each %flags) {
-    my ($dir, $file) = @$v;
-    next unless -e "$dir/$file";
-    push @flags, "$flag=$dir";
-  }
-  "@flags"
+  return ('', '') unless -e '/usr/lib/openssl-1.0';
+  (<<LINK, ' --with-ssl="$(pwd)/openssl-hack"')
+mkdir -p openssl-hack
+for dir in lib include
+do ln -nsf /usr/\$dir/openssl-1.0 openssl-hack/\$dir
+done
+LINK
 }
 
 # TODO: blech
