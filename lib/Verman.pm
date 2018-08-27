@@ -197,7 +197,9 @@ sub load_class_for {
   die "Couldn't find Verman:: module for $arg\n"
 }
 
-my %simple_classes = ();
+my %simple_classes = (
+  graal => [qw(Graal SelfContained)],
+);
 
 sub load_simple {
   my ($self, $arg) = @_;
