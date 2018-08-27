@@ -198,6 +198,7 @@ sub load_class_for {
 }
 
 my %simple_classes = (
+  clj => [qw(Clj SelfContained)],
   graal => [qw(Graal SelfContained)],
 );
 
