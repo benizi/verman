@@ -256,6 +256,13 @@ sub runner_cmd_args {
   ($runner, @$args)
 }
 
+sub _file_to_mod {
+  local $_ = @_ ? shift : $_;
+  s{\.pm$}{};
+  s{/}{::}g;
+  $_;
+}
+
 sub _load_langs {
   my $self = shift;
   my $base = dirname $INC{'Verman.pm'};
@@ -263,10 +270,16 @@ sub _load_langs {
 
   find sub {
     return unless -f;
-    (my $mod = substr $File::Find::name, 1 + length $base) =~ s{\.pm$}{};
-    $mod =~ s{/}{::}g;
+    my $mod = _file_to_mod(substr $File::Find::name, 1 + length $base);
     eval "require $mod; 1" and push @mods, $mod;
   }, $base;
+
+  my %before = map { $_ => 1 } keys %INC;
+  $self->load_simple($_) for keys %simple_classes;
+  for my $mod (keys %INC) {
+    next if exists $before{$mod};
+    push @mods, _file_to_mod($mod);
+  }
 
   for my $mod (@mods) {
     my $sym = \%::;
