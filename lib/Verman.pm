@@ -209,8 +209,10 @@ sub load_simple {
   (my $mod = $short);
   s/^(?!.*::)/Verman::/ for $mod, $base;
   (my $pm = $mod) =~ s{::}{/}g;
+  $pm .= '.pm';
   my $def = "package $mod; use base qw{$base}; 1;";
-  return unless exists $INC{"$pm.pm"} or eval $def;
+  return unless exists $INC{$pm} or eval $def;
+  $INC{$pm} = __FILE__;
   $mod
 }
 
