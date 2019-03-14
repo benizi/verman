@@ -15,6 +15,7 @@ sub new {
     seen => {},
     vars => [],
     eval => [],
+    pathlike => {},
   }, shift;
   my $root = $self->var('root') || $self->var(root => $self->default_root, 1);
   $self->var(hidden => ($root eq $ENV{HOME}) ? 1 : 0, 1);
@@ -59,8 +60,17 @@ sub _evalout {
   map join('', $$_[-1] ? 'export ' : '', join('=', @$_[0,1])), shift->_effects
 }
 
+sub _evalzsh {
+  my $self = shift;
+  return unless $ENV{VERMAN_ZSH};
+  map {
+    "[[ \$parameters[\L$_\E] = (*tied*) ]] || typeset -T \U$_\E \L$_\E"
+  } keys %{$$self{pathlike}}
+}
+
 sub evalout {
-  print $_, $/ for shift->_evalout;
+  my $self = shift;
+  print $_, $/ for $self->_evalout, $self->_evalzsh;
 }
 
 sub _setenv {
@@ -128,13 +138,14 @@ sub env_vars {
   }
 }
 
+sub mark_pathlike {
+  my ($self, $name) = @_;
+  $$self{pathlike}{$name}++
+}
+
 sub split_pathlike {
   my ($self, $val) = @_;
-  $val ||= '';
-  {
-    local %ENV = (PATH => $val);
-    File::Spec->path
-  }
+  map { length ? $_ : "." } split $Config{path_sep}, $val || '', -1
 }
 
 sub join_pathlike {
@@ -169,6 +180,7 @@ sub no_pathlike {
 sub pre_pathlike {
   my ($self, $name, @add) = @_;
   ($name, @add) = ('PATH', $name) unless @add;
+  $self->mark_pathlike($name);
   #warn sprintf("%*s ", length($path), ' ')."$ENV{$name}\n";
   my @paths = $self->split_pathlike($self->var($name) // $ENV{$name});
   my %seen;
