@@ -197,6 +197,7 @@ sub print_env {
 }
 
 my @features = qw(
+  envflags
   multi
   tie
 );

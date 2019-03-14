@@ -12,8 +12,16 @@ sub sep {
   /\A[+;]\Z/
 }
 
+sub process_flags {
+  while (@_ and $_[0] =~ s/^--//) {
+    my ($var, $val) = split '=', shift, 2;
+    $ENV{"VERMAN_\U$var\E"} = $val // 1
+  }
+}
+
 sub parse_cmds {
   my @cmds;
+  &process_flags;
   cmd: while (@_) {
     shift if sep $_[0];
     arg: for my $i (0..$#_) {
