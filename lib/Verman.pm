@@ -196,6 +196,22 @@ sub print_env {
   }
 }
 
+my @features = qw(
+  multi
+  tie
+);
+
+sub features {
+  my ($self, @check) = @_;
+  return join ' ', @features unless @check;
+  my %features;
+  $features{$_}++ for @features;
+  exit 1 if grep !$features{$_}, @check;
+  exit
+}
+
+sub multi { &features }
+
 sub _verman_dir {
   my $path = $INC{__PACKAGE__.'.pm'};
   $path =~ s{\.pm$}{};
