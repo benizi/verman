@@ -211,8 +211,6 @@ sub features {
   exit
 }
 
-sub multi { &features }
-
 sub _verman_dir {
   my $path = $INC{__PACKAGE__.'.pm'};
   $path =~ s{\.pm$}{};
