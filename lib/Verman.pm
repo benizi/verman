@@ -243,15 +243,16 @@ sub runner_default {
 
   my $class = 'Verman';
 
-  my $verman_arg0 = $$args[0] =~ /^verm(an)?$/;
-  my ($runner, $default_cmd);
+  my ($runner, $cmd) = split '-', $$args[0], 2;
 
-  if ($verman_arg0) {
+  if ($runner eq 'verman') {
     shift @$args;
+    return $self, $cmd, $cmd, @$args if $cmd and $self->can($cmd);
     return $self, $$args[0] if $self->can($$args[0]);
     my $class = $self->load_class_for(shift @$args);
     return $class->new, 'current' if $class;
   }
+
   ($self, 'usage')
 }
 
@@ -261,8 +262,9 @@ sub runner_cmd_args {
 
   $_ = basename $_ for $$args[0];
 
-  my ($runner, $default_cmd) = $self->runner_default($args);
+  my ($runner, $default_cmd, @replace_args) = $self->runner_default($args);
 
+  @$args = @replace_args if @replace_args;
   @$args = ($default_cmd) unless @$args;
 
   ($runner, @$args)
