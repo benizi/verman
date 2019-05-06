@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use base qw/Verman::Nix Verman::SelfContained Verman::Compiled/;
 use Verman::Util;
+use JSON qw/decode_json/;
 
 sub new {
   my $self = shift->SUPER::new(@_);
@@ -37,5 +38,18 @@ sub after_path {
 }
 
 sub _nix_version_prefix { 'v' }
+
+sub _nix_finders { (qw/_nix_otp_nested/, shift->SUPER::_nix_finders(@_)) }
+
+sub _nix_otp_nested {
+  my $self = shift;
+  my $dir = __FILE__;
+  $dir = dirname($dir) for 1..3;
+  my $nix_script = File::Spec->catfile($dir, "nix", "elixir-versions.nix");
+  my $json = readpipe "nix-instantiate --json --strict --eval \Q$nix_script\E";
+  my @ret = @{decode_json($json)};
+  @ret = grep $$_{version} eq $_[0], @ret if @_;
+  $self->_dbg_packages(_nix_otp_nested => @ret)
+}
 
 1;

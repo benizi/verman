@@ -60,7 +60,7 @@ sub _dbg_packages {
 sub nix_versions {
   my ($self) = @_;
   my %pkgs;
-  $pkgs{$$_{version}}++ for $self->_nix_store_dirs, $self->_nix_env_versions;
+  $pkgs{$$_{version}}++ for map $self->$_, $self->_nix_finders;
   map $self->to_display_version($_), keys %pkgs
 }
 
@@ -81,30 +81,43 @@ sub install {
   my $gcroot = path '/nix/var/nix/gcroots/per-user', $ENV{USER};
   $mkdirs{$_}++ for $prefix, $gcroot, $self->$nix_stubs($v);
   my @mkdirs = map "mkdir -p $_", keys %mkdirs;
-  my ($nix_root, $store_path);
-  for my $finder (qw/_nix_instantiated _nix_env_versions/) {
-    next unless my ($found) = $self->$finder($nix_v);
-    $nix_root = $$found{full};
-    ($store_path) = ((grep -e, $$found{drv}//""), $nix_root);
-    last;
+  my ($installable) = $self->_nix_find_installable($nix_v);
+  die "Couldn't find version ($v) in Nix store or pkgs\n" unless $installable;
+  my ($nix_root, $drv, $attr) = @{$installable}{qw/full drv attr/};
+  my @realize;
+  unless (-d $nix_root) {
+    my $drv_val = $attr ? qq[\$(nix-instantiate '<nixpkgs>' -A $attr)] : $drv;
+    @realize = (qq[drv="$drv_val"], 'nix-store -r "$drv"');
   }
-  die "Couldn't find version ($v) in Nix store or pkgs\n" unless $nix_root;
-  my $realize = "nix-store -r $store_path";
   my @ln = map {
     my ($target, $source) = @$_;
     "ln -sf --target-directory=$target $source";
   } [$prefix, "$nix_root/bin"], [$gcroot, $nix_root];
   my @post = $self->$post_install($v);
-  'set -e', $realize, @mkdirs, @ln, @post
+  'set -e', @realize, @mkdirs, @ln, @post
 }
+
+sub _nix_find_installable {
+  my $self = shift;
+  my ($nix_v) = @_;
+  my @ret;
+  for my $finder ($self->_nix_finders(@_)) {
+    push @ret, $self->$finder(@_);
+    last if @_ and @ret;
+  }
+  $self->_dbg_packages(_nix_find_installable => @ret)
+}
+
+sub _nix_finders { qw(_nix_instantiated _nix_env_versions) }
 
 sub _nix_instantiated {
   # Find the newest entry in the store (by ctime) that has a matching version.
-  my ($self, $nix_v) = @_;
+  my $self = shift;
+  my ($nix_v) = @_;
   map $$_[0],
   sort { $$b[1] <=> $$a[1] }
-  map [$_, (stat)[10]],
-  grep $$_{version} eq $nix_v,
+  map [$_, (stat $$_{full})[10]],
+  grep @_ ? $$_{version} eq $nix_v : 1,
   $self->_nix_store_dirs
 }
 
