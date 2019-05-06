@@ -67,7 +67,7 @@ sub nix_versions {
 sub available {
   my $self = shift;
   my $non_nix = $self->can('_non_nix_available') || sub { };
-  $self->nix_versions, $self->$non_nix(@_)
+  $self->$non_nix(@_), version_sort($self->nix_versions)
 }
 
 sub install {
