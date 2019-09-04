@@ -29,9 +29,10 @@ sub _nix_env_versions {
   my $pkg = $self->nixpkg;
   my $search = join '-', $pkg, @_;
   my @ret;
-  for (readpipe "nix-env -qas --drv-path --out-path $search") {
+  for (readpipe "nix-env -qasP --drv-path --out-path $search") {
     chomp;
-    my ($status, $name, $drv, $out) = split;
+    my ($status, $attr, $name, $drv, $out) = split;
+    $attr =~ s{^nixpkgs\.}{};
     my @status = split //, $status;
     my $flags = {};
     # Nix status marker is three chars:
@@ -43,7 +44,13 @@ sub _nix_env_versions {
       $$flags{$flag} = ('-' ne shift @status) ? 1 : 0;
     }
     (my $v = $name) =~ s/^\Q$pkg\E-//;
-    push @ret, {version => $v, full => $out, drv => $drv, flags => $flags};
+    push @ret, {
+      version => $v,
+      full => $out,
+      drv => $drv,
+      attr => $attr,
+      flags => $flags,
+    };
   }
   $self->_dbg_packages(_nix_env_versions => @ret)
 }
