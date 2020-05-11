@@ -99,9 +99,15 @@ sub install {
   my @ln = map {
     my ($target, $source) = @$_;
     "ln -sf --target-directory=$target $source";
-  } [$prefix, "$nix_root/bin"], [$gcroot, $nix_root];
+  } $self->_nix_symlinks($v, $prefix, $nix_root), [$gcroot, $nix_root];
   my @post = $self->$post_install($v);
   'set -e', @realize, @mkdirs, @ln, @post
+}
+
+sub _nix_symlinks {
+  my $self = shift;
+  my ($prefix, $nix_root) = @_;
+  [$prefix, "$nix_root/bin"]
 }
 
 sub _nix_find_installable {
