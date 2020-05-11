@@ -86,7 +86,7 @@ sub install {
   my $post_install = $self->can('_post_build') || sub {};
   my $prefix = path $self->var($self->_versvar), $v;
   my $gcroot = path '/nix/var/nix/gcroots/per-user', $ENV{USER};
-  $mkdirs{$_}++ for $prefix, $gcroot, $self->$nix_stubs($v);
+  $mkdirs{$_}++ for $prefix, $gcroot, $self->$nix_stubs($v, $prefix);
   my @mkdirs = map "mkdir -p $_", keys %mkdirs;
   my ($installable) = $self->_nix_find_installable($nix_v);
   die "Couldn't find version ($v) in Nix store or pkgs\n" unless $installable;
