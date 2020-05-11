@@ -151,9 +151,7 @@ sub _nix_display {
 sub _nix_parse {
   my ($self, $v) = @_;
   my ($pre, $suf) = ($self->_nix_version_prefix, $self->_nix_version_suffix);
-  $v =~ s/^\Q$pre\E//;
-  $v =~ s/\Q$suf\E$//;
-  $v
+  $v =~ /^\Q$pre\E(.+)\Q$suf\E$/ ? $1 : $v
 }
 
 1;
