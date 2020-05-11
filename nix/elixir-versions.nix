@@ -24,9 +24,9 @@ let
   valid = x: !(any isNull (attrValues x)) ;
   expand = info @ { elixir, otp, full, ... }: info // {
     version = "${elixir}-${otp}" ;
-    drv = full.drvPath ;
-    full = full.outPath ;
+    drv = (orElse full.drvPath null) ;
+    full = (orElse full.outPath null) ;
   } ;
   flatMap = f: l: (foldl' (acc: i: acc ++ (f i)) [] l) ;
   allVersions = (flatMap (erl: (map (versions erl) (elixirs erl))) erls) ;
-in (map expand (filter valid allVersions))
+in (filter valid (map expand (filter valid allVersions)))
